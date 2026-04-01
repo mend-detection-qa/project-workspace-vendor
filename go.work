@@ -1,0 +1,20 @@
+go 1.22.0
+
+// IMPORTANT: This workspace has a vendor/ directory at the go.work root
+// created by `go work vendor` (Go 1.22+).
+//
+// CONFIRMED BUG TRIGGER:
+//   go list -m -json all          → ERROR: "can't compute 'all' using the vendor directory"
+//   go list -mod=vendor -m -json  → ERROR: same
+//   go list -mod=readonly -m -json → WORKS correctly
+//
+// UA's GoModulesDependencyManager.runListDeps() currently checks for vendor/
+// adjacent to each go.mod file to decide between -mod=vendor and -mod=readonly.
+// For workspaces, vendor/ is at the go.work root (this directory), not next to
+// any go.mod. UA must use -mod=readonly (not -mod=vendor) for workspace scans
+// even when a vendor/ directory exists — but at the wrong location.
+
+use (
+	./app
+	./lib
+)
